@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Script Editor for Azure DevOps</title>
+<style>
+  :root { color-scheme: light dark; --fg: #1f1f1f; --muted: #616161; --bg: #fff; --line: #e0e0e0; --accent: #0f6cbd; }
+  @media (prefers-color-scheme: dark) { :root { --fg: #e8e8e8; --muted: #a0a0a0; --bg: #202124; --line: #3a3a3a; --accent: #5aa9f0; } }
+  body { margin: 0; width: 280px; font: 13px 'Segoe UI', system-ui, sans-serif; color: var(--fg); background: var(--bg); }
+  header { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  header img { width: 28px; height: 28px; }
+  header h1 { margin: 0; font-size: 14px; font-weight: 600; }
+  main { padding: 8px 16px 14px; }
+  label { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; }
+  select, input[type=number] { font: inherit; color: inherit; background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 3px 6px; }
+  input[type=number] { width: 56px; }
+  input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); }
+  footer { padding: 10px 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <img src="icons/icon-48.png" alt="">
+  <h1>Script Editor for Azure DevOps</h1>
+</header>
+<main>
+  <label>Theme
+    <select id="theme">
+      <option value="auto">Match Azure DevOps</option>
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+    </select>
+  </label>
+  <label>Font size <input id="fontSize" type="number" min="9" max="24"></label>
+  <label>Wrap long lines <input id="wrap" type="checkbox"></label>
+</main>
+<footer>Changes apply to open pages right away.</footer>
+<script src="popup.js"></script>
+</body>
+</html>

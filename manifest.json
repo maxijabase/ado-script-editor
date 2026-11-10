@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Script Editor for Azure DevOps",
+  "short_name": "Script Editor",
+  "version": "1.0.0",
+  "description": "A real code editor for inline scripts in Azure DevOps pipeline tasks: syntax highlighting, autocomplete, full screen.",
+  "homepage_url": "https://github.com/maxijabase/ado-script-editor",
+  "icons": { "16": "icons/icon-16.png", "32": "icons/icon-32.png", "48": "icons/icon-48.png", "128": "icons/icon-128.png" },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": { "16": "icons/icon-16.png", "32": "icons/icon-32.png" }
+  },
+  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": ["https://dev.azure.com/*", "https://*.visualstudio.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

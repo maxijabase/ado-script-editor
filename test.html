@@ -1,0 +1,55 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Script Editor test page</title>
+<!--
+  Mock of the Azure DevOps classic task form, for trying the content script without a real pipeline.
+  Serve this folder (python -m http.server) after `pnpm build` and open /test.html.
+  Mirrors what matters in ADO: a React-controlled textarea, a <label> linked by aria-labelledby inside a flex row,
+  a .task-type-label header, and the same textarea reused when switching tasks.
+-->
+<body style="background:#1e1e1e;color:#ddd;font-family:'Segoe UI',sans-serif;margin:24px">
+<div id="root"></div>
+<script>
+  // chrome.storage shim backed by localStorage; call chrome.storage.sync.set({...}) from devtools to try settings.
+  const listeners = [];
+  window.chrome = { storage: {
+    sync: {
+      get: (defaults, cb) => cb({ ...defaults, ...JSON.parse(localStorage.settings || '{}') }),
+      set: (v) => { localStorage.settings = JSON.stringify({ ...JSON.parse(localStorage.settings || '{}'), ...v }); listeners.forEach((l) => l()); },
+    },
+    onChanged: { addListener: (l) => listeners.push(l) },
+  } };
+</script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+<script>
+  const h = React.createElement;
+  const tasks = {
+    ps: { type: 'Azure PowerShell', script: '$envCode = \'$(envCode)\'\n$app = Get-AzContainerApp -Name "tenants-$envCode"\nWrite-Host "##vso[task.setvariable variable=appName]$($app.Name)"' },
+    bash: { type: 'Bash', script: '#!/bin/bash\nset -euo pipefail\necho "Deploying $(Build.BuildId)"\nfor f in *.json; do jq . "$f"; done' },
+    cli: { type: 'Azure CLI', script: 'az account show\naz containerapp list -g $(resourceGroup) -o table', scriptType: 'Shell' },
+  };
+  function App() {
+    const [task, setTask] = React.useState('ps');
+    const [state, setState] = React.useState(tasks);
+    window.__state = state;
+    const t = state[task];
+    return h('div', { className: 'task-panel' },
+      h('div', { style: { marginBottom: 12 } }, Object.keys(tasks).map((k) => h('button', { key: k, id: k, onClick: () => setTask(k) }, tasks[k].type))),
+      h('label', { className: 'task-type-label' }, t.type, h('div', { className: 'tooltip' })),
+      t.scriptType && h('div', { className: 'input-field-component' },
+        h('label', null, 'Script Type'),
+        h('input', { id: 'scriptType', value: t.scriptType, onChange: (e) => setState({ ...state, [task]: { ...t, scriptType: e.target.value } }) })),
+      h('div', { className: 'input-field-component' },
+        h('div', null, h('label', { id: 'lbl-script' }, 'Inline Script')),
+        h('div', { className: 'ms-TextField' }, h('div', { className: 'ms-TextField-wrapper' },
+          h('div', { className: 'ms-TextField-fieldGroup', style: { display: 'flex', border: '1px solid #666' } }, h('textarea', {
+            'aria-labelledby': 'lbl-script', maxLength: 5000, rows: 10, value: t.script, style: { flex: 1 },
+            onChange: (e) => setState({ ...state, [task]: { ...t, script: e.target.value } }),
+          }))))),
+      h('div', null, h('label', { id: 'lbl-args' }, 'Arguments'), h('textarea', { 'aria-labelledby': 'lbl-args', defaultValue: 'not me' })));
+  }
+  ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+</script>
+<script src="dist/content.js"></script>
+</body>
